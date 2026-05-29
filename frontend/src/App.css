@@ -1,0 +1,13 @@
+/* App.css - SoGood specific styles */
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0;
+  min-height: 100vh;
+}
+
+main {
+  width: 100%;
+}

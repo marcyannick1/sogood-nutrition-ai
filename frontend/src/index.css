@@ -1,0 +1,102 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom base styles */
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  body {
+    @apply bg-sogood-bg text-sogood-text-primary font-manrope;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Custom components */
+@layer components {
+  .glass-header {
+    @apply backdrop-blur-xl bg-white/70 border-b border-sogood-border;
+  }
+
+  .search-glow-focus {
+    @apply focus:shadow-search-glow focus:outline-none;
+  }
+
+  .product-card {
+    @apply rounded-2xl border border-sogood-border bg-sogood-surface p-6 transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1;
+  }
+
+  .btn-primary {
+    @apply rounded-pill bg-sogood-primary px-6 py-3 font-manrope font-semibold text-white transition-colors hover:bg-sogood-primary-hover active:scale-95;
+  }
+
+  .btn-secondary {
+    @apply rounded-pill border border-sogood-border bg-sogood-surface px-6 py-3 font-manrope font-semibold text-sogood-text-primary transition-colors hover:bg-sogood-bg active:scale-95;
+  }
+
+  .badge-label {
+    @apply inline-block rounded-full bg-sogood-bg px-3 py-1 text-xs font-semibold uppercase tracking-label text-sogood-text-primary;
+  }
+
+  .badge-nutriscore {
+    @apply inline-flex h-12 w-12 items-center justify-center rounded-pill font-outfit font-bold text-white;
+  }
+
+  .badge-nova {
+    @apply inline-flex items-center gap-2 rounded-pill px-4 py-2 font-manrope font-semibold text-white;
+  }
+
+  .input-field {
+    @apply w-full rounded-xl border border-sogood-border bg-sogood-surface px-4 py-3 font-manrope text-sogood-text-primary placeholder-sogood-text-secondary transition-all search-glow-focus;
+  }
+
+  .section-title {
+    @apply font-outfit text-3xl font-bold tracking-tight text-sogood-text-primary;
+  }
+
+  .section-subtitle {
+    @apply font-manrope text-lg text-sogood-text-secondary;
+  }
+
+  .nav-pill {
+    @apply flex items-center gap-2 rounded-full px-4 py-2 font-manrope font-medium transition-all;
+  }
+
+  .nav-pill-active {
+    @apply bg-sogood-primary text-white;
+  }
+
+  .nav-pill-inactive {
+    @apply text-sogood-text-secondary hover:text-sogood-text-primary;
+  }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  @apply w-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-sogood-bg;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply rounded-full bg-sogood-border hover:bg-sogood-text-secondary;
+}
+
+/* Selection */
+::selection {
+  @apply bg-sogood-accent text-sogood-text-primary;
+}
+
