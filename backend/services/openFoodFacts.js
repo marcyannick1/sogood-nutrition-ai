@@ -10,6 +10,7 @@ export const searchProducts = async (query, pageSize = 10) => {
         search_terms: query,
         page_size: pageSize,
         json: 1,
+        action: 'process',
       },
     });
     return response.data.products || [];
