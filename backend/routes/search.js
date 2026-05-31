@@ -1,6 +1,7 @@
 import express from 'express';
 import Product from '../models/Product.js';
 import * as OpenFoodFacts from '../services/openFoodFacts.js';
+import { Op } from 'sequelize';
 
 const router = express.Router();
 
@@ -10,26 +11,19 @@ router.get('/', async (req, res) => {
     const { q, page = 1 } = req.query;
     if (!q) return res.status(400).json({ error: 'Search query required' });
 
-    const skip = (page - 1) * 20;
-    const results = await Product.find({
-      $or: [
-        { name: new RegExp(q, 'i') },
-        { brands: new RegExp(q, 'i') },
-        { category: new RegExp(q, 'i') },
-      ],
-    })
-      .limit(20)
-      .skip(skip);
-
-    const total = await Product.countDocuments({
-      $or: [
-        { name: new RegExp(q, 'i') },
-        { brands: new RegExp(q, 'i') },
-        { category: new RegExp(q, 'i') },
-      ],
+    const offset = (page - 1) * 20;
+    const { count, rows } = await Product.findAndCountAll({
+      where: {
+        [Op.or]: [
+          { name: { [Op.iLike]: `%${q}%` } },
+          { category: { [Op.iLike]: `%${q}%` } }
+        ]
+      },
+      limit: 20,
+      offset
     });
 
-    res.json({ data: results, pagination: { page, total } });
+    res.json({ data: rows, pagination: { page, total: count } });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -38,9 +32,10 @@ router.get('/', async (req, res) => {
 // Search by category
 router.get('/category/:category', async (req, res) => {
   try {
-    const products = await Product.find({
-      category: new RegExp(req.params.category, 'i'),
-    }).limit(50);
+    const products = await Product.findAll({
+      where: { category: { [Op.iLike]: `%${req.params.category}%` } },
+      limit: 50
+    });
 
     res.json({ data: products });
   } catch (error) {

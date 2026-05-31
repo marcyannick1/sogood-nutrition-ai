@@ -1,5 +1,6 @@
 import express from 'express';
 import Product from '../models/Product.js';
+import { Op } from 'sequelize';
 
 const router = express.Router();
 
@@ -7,22 +8,22 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const { page = 1, limit = 20, category, nutriScore } = req.query;
-    const skip = (page - 1) * limit;
+    const offset = (page - 1) * limit;
 
-    let query = {};
-    if (category) query.category = new RegExp(category, 'i');
-    if (nutriScore) query.nutriScore = nutriScore.toUpperCase();
+    let where = {};
+    if (category) where.category = { [Op.iLike]: `%${category}%` };
+    if (nutriScore) where.nutriScore = nutriScore.toUpperCase();
 
-    const products = await Product.find(query)
-      .limit(parseInt(limit))
-      .skip(skip)
-      .sort({ createdAt: -1 });
-
-    const total = await Product.countDocuments(query);
+    const { count, rows } = await Product.findAndCountAll({
+      where,
+      limit: parseInt(limit),
+      offset,
+      order: [['createdAt', 'DESC']]
+    });
 
     res.json({
-      data: products,
-      pagination: { page: parseInt(page), limit: parseInt(limit), total },
+      data: rows,
+      pagination: { page: parseInt(page), limit: parseInt(limit), total: count },
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -32,7 +33,7 @@ router.get('/', async (req, res) => {
 // Get single product by ID
 router.get('/:id', async (req, res) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findByPk(req.params.id);
     if (!product) return res.status(404).json({ error: 'Product not found' });
     res.json(product);
   } catch (error) {
@@ -43,7 +44,7 @@ router.get('/:id', async (req, res) => {
 // Get product by code
 router.get('/code/:code', async (req, res) => {
   try {
-    const product = await Product.findOne({ code: req.params.code });
+    const product = await Product.findOne({ where: { code: req.params.code } });
     if (!product) return res.status(404).json({ error: 'Product not found' });
     res.json(product);
   } catch (error) {
@@ -55,15 +56,15 @@ router.get('/code/:code', async (req, res) => {
 router.post('/filter', async (req, res) => {
   try {
     const { nutriScore, nova, maxSugars, maxSalt, brands } = req.body;
-    let query = {};
+    let where = {};
 
-    if (nutriScore) query.nutriScore = { $in: nutriScore };
-    if (nova) query.nova = { $in: nova };
-    if (maxSugars) query['nutrition.sugars'] = { $lte: maxSugars };
-    if (maxSalt) query['nutrition.salt'] = { $lte: maxSalt };
-    if (brands) query.brands = { $in: brands };
+    if (nutriScore) where.nutriScore = { [Op.in]: nutriScore };
+    if (nova) where.nova = { [Op.in]: nova };
+    if (maxSugars) where.sugars = { [Op.lte]: maxSugars };
+    if (maxSalt) where.salt = { [Op.lte]: maxSalt };
+    if (brands) where.brands = { [Op.overlap]: brands };
 
-    const products = await Product.find(query).limit(100);
+    const products = await Product.findAll({ where, limit: 100 });
     res.json(products);
   } catch (error) {
     res.status(500).json({ error: error.message });

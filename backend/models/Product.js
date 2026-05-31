@@ -1,63 +1,94 @@
-import mongoose from 'mongoose';
+import { DataTypes } from 'sequelize';
+import sequelize from '../config/database.js';
 
-const productSchema = new mongoose.Schema({
+const Product = sequelize.define('Product', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
   code: {
-    type: String,
-    required: true,
-    unique: true,
-    index: true,
+    type: DataTypes.STRING,
+    allowNull: false,
+    unique: true
   },
   name: {
-    type: String,
-    required: true,
-    index: true,
+    type: DataTypes.STRING,
+    allowNull: false
   },
   brands: {
-    type: [String],
-    default: [],
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    defaultValue: []
   },
-  category: String,
-  imageUrl: String,
+  category: {
+    type: DataTypes.STRING
+  },
+  imageUrl: {
+    type: DataTypes.STRING
+  },
   nutriScore: {
-    type: String,
-    enum: ['A', 'B', 'C', 'D', 'E', 'UNKNOWN'],
-    default: 'UNKNOWN',
+    type: DataTypes.ENUM('A', 'B', 'C', 'D', 'E', 'UNKNOWN'),
+    defaultValue: 'UNKNOWN'
   },
   nova: {
-    type: Number,
-    enum: [1, 2, 3, 4, 0],
-    default: 0,
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+    validate: {
+      isIn: [[0, 1, 2, 3, 4]]
+    }
   },
-  nutrition: {
-    energyKcal: Number,
-    fat: Number,
-    saturatedFat: Number,
-    carbohydrates: Number,
-    sugars: Number,
-    protein: Number,
-    salt: Number,
-    fiber: Number,
+  energyKcal: {
+    type: DataTypes.FLOAT
+  },
+  fat: {
+    type: DataTypes.FLOAT
+  },
+  saturatedFat: {
+    type: DataTypes.FLOAT
+  },
+  carbohydrates: {
+    type: DataTypes.FLOAT
+  },
+  sugars: {
+    type: DataTypes.FLOAT
+  },
+  protein: {
+    type: DataTypes.FLOAT
+  },
+  salt: {
+    type: DataTypes.FLOAT
+  },
+  fiber: {
+    type: DataTypes.FLOAT
   },
   additives: {
-    type: [String],
-    default: [],
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    defaultValue: []
   },
   allergens: {
-    type: [String],
-    default: [],
+    type: DataTypes.ARRAY(DataTypes.STRING),
+    defaultValue: []
   },
-  ingredients: String,
-  ecoscoreGrade: String,
-  origin: String,
+  ingredients: {
+    type: DataTypes.TEXT
+  },
+  ecoscoreGrade: {
+    type: DataTypes.STRING
+  },
+  origin: {
+    type: DataTypes.STRING
+  },
   lastUpdated: {
-    type: Date,
-    default: Date.now,
-  },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
+  }
+}, {
+  tableName: 'products',
+  timestamps: true,
+  indexes: [
+    { fields: ['code'] },
+    { fields: ['name'] }
+  ]
 });
 
-const Product = mongoose.model('Product', productSchema);
 export default Product;
