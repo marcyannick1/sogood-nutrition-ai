@@ -131,8 +131,8 @@ export function ProductDetail() {
                 {product.brands}
               </p>
               <p className="text-sm text-sogood-text-secondary">
-                {product.categories_tags?.[0] && (
-                  <>Catégorie: {product.categories_tags[0]}</>
+                {product.categories && (
+                  <>Catégorie: {product.categories}</>
                 )}
               </p>
             </div>
@@ -150,46 +150,49 @@ export function ProductDetail() {
               </div>
 
               {/* Valeurs nutritionnelles */}
-              {(product.energy_100g ||
-                product.fat_100g ||
-                product.sugars_100g ||
-                product.salt_100g) && (
+              {(product.fat ||
+                product.sugars ||
+                product.salt) && (
                 <div className="product-card">
                   <h3 className="font-semibold text-sogood-text-primary mb-4">
                     Valeurs nutritionnelles (pour 100g)
                   </h3>
                   <div className="space-y-2 text-sm">
-                    {product.energy_100g && (
-                      <div className="flex justify-between">
-                        <span className="text-sogood-text-secondary">Énergie:</span>
-                        <span className="font-semibold">
-                          {product.energy_100g} kJ
-                        </span>
-                      </div>
-                    )}
-                    {product.fat_100g && (
+                    {product.fat && (
                       <div className="flex justify-between">
                         <span className="text-sogood-text-secondary">
                           Graisses:
                         </span>
-                        <span className="font-semibold">{product.fat_100g}g</span>
+                        <span className="font-semibold">{product.fat}g</span>
                       </div>
                     )}
-                    {product.sugars_100g && (
+                    {product.sugars && (
                       <div className="flex justify-between">
                         <span className="text-sogood-text-secondary">Sucres:</span>
                         <span className="font-semibold">
-                          {product.sugars_100g}g
+                          {product.sugars}g
                         </span>
                       </div>
                     )}
-                    {product.salt_100g && (
+                    {product.salt && (
                       <div className="flex justify-between">
                         <span className="text-sogood-text-secondary">Sel:</span>
-                        <span className="font-semibold">{product.salt_100g}g</span>
+                        <span className="font-semibold">{product.salt}g</span>
                       </div>
                     )}
                   </div>
+                </div>
+              )}
+
+              {/* Additifs */}
+              {product.additives_count !== undefined && (
+                <div className="product-card">
+                  <h3 className="font-semibold text-sogood-text-primary mb-2">
+                    Additifs
+                  </h3>
+                  <p className="text-sm text-sogood-text-secondary">
+                    {product.additives_count} additif{product.additives_count > 1 ? 's' : ''} détecté{product.additives_count > 1 ? 's' : ''}
+                  </p>
                 </div>
               )}
             </div>

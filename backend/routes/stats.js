@@ -12,24 +12,24 @@ router.get('/overview', async (req, res) => {
 
     const byNutriScore = await Product.findAll({
       attributes: [
-        'nutriScore',
+        'nutriscore_grade',
         [fn('COUNT', col('id')), 'count']
       ],
-      group: ['nutriScore']
+      group: ['nutriscore_grade']
     });
 
     const byNova = await Product.findAll({
       attributes: [
-        'nova',
+        'nova_group',
         [fn('COUNT', col('id')), 'count']
       ],
-      group: ['nova']
+      group: ['nova_group']
     });
 
     res.json({
       totalProducts: total,
-      byNutriScore: byNutriScore.map(item => ({ _id: item.nutriScore, count: parseInt(item.dataValues.count) })),
-      byNova: byNova.map(item => ({ _id: item.nova, count: parseInt(item.dataValues.count) })),
+      byNutriScore: byNutriScore.map(item => ({ _id: item.nutriscore_grade, count: parseInt(item.dataValues.count) })),
+      byNova: byNova.map(item => ({ _id: item.nova_group, count: parseInt(item.dataValues.count) })),
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -41,14 +41,14 @@ router.get('/nutriscore-distribution', async (req, res) => {
   try {
     const data = await Product.findAll({
       attributes: [
-        'nutriScore',
+        'nutriscore_grade',
         [fn('COUNT', col('id')), 'count']
       ],
-      group: ['nutriScore'],
-      order: [['nutriScore', 'ASC']]
+      group: ['nutriscore_grade'],
+      order: [['nutriscore_grade', 'ASC']]
     });
 
-    res.json(data.map(item => ({ _id: item.nutriScore, count: parseInt(item.dataValues.count) })));
+    res.json(data.map(item => ({ _id: item.nutriscore_grade, count: parseInt(item.dataValues.count) })));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -59,14 +59,14 @@ router.get('/nova-distribution', async (req, res) => {
   try {
     const data = await Product.findAll({
       attributes: [
-        'nova',
+        'nova_group',
         [fn('COUNT', col('id')), 'count']
       ],
-      group: ['nova'],
-      order: [['nova', 'ASC']]
+      group: ['nova_group'],
+      order: [['nova_group', 'ASC']]
     });
 
-    res.json(data.map(item => ({ _id: item.nova, count: parseInt(item.dataValues.count) })));
+    res.json(data.map(item => ({ _id: item.nova_group, count: parseInt(item.dataValues.count) })));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -75,16 +75,20 @@ router.get('/nova-distribution', async (req, res) => {
 // Top brands
 router.get('/top-brands', async (req, res) => {
   try {
-    const data = await sequelize.query(`
-      SELECT unnest(brands) as brand, COUNT(*) as count
-      FROM products
-      WHERE brands IS NOT NULL AND array_length(brands, 1) > 0
-      GROUP BY brand
-      ORDER BY count DESC
-      LIMIT 20
-    `, { type: sequelize.QueryTypes.SELECT });
+    const data = await Product.findAll({
+      attributes: [
+        'brands',
+        [fn('COUNT', col('id')), 'count']
+      ],
+      where: {
+        brands: { [Op.ne]: null }
+      },
+      group: ['brands'],
+      order: [[fn('COUNT', col('id')), 'DESC']],
+      limit: 20
+    });
 
-    res.json(data.map(item => ({ _id: item.brand, count: parseInt(item.count) })));
+    res.json(data.map(item => ({ _id: item.brands, count: parseInt(item.dataValues.count) })));
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -94,9 +98,9 @@ router.get('/top-brands', async (req, res) => {
 router.get('/best-products', async (req, res) => {
   try {
     const data = await Product.findAll({
-      where: { nutriScore: { [Op.in]: ['A', 'B'] } },
+      where: { nutriscore_grade: { [Op.in]: ['a', 'b'] } },
       limit: 20,
-      order: [['nutriScore', 'ASC']]
+      order: [['nutriscore_grade', 'ASC']]
     });
     res.json(data);
   } catch (error) {
@@ -108,9 +112,9 @@ router.get('/best-products', async (req, res) => {
 router.get('/worst-products', async (req, res) => {
   try {
     const data = await Product.findAll({
-      where: { nutriScore: { [Op.in]: ['D', 'E'] } },
+      where: { nutriscore_grade: { [Op.in]: ['d', 'e'] } },
       limit: 20,
-      order: [['nutriScore', 'DESC']]
+      order: [['nutriscore_grade', 'DESC']]
     });
     res.json(data);
   } catch (error) {
@@ -123,11 +127,9 @@ router.get('/nutrition-average', async (req, res) => {
   try {
     const data = await Product.findOne({
       attributes: [
-        [fn('AVG', col('energyKcal')), 'avgEnergy'],
         [fn('AVG', col('fat')), 'avgFat'],
         [fn('AVG', col('sugars')), 'avgSugars'],
-        [fn('AVG', col('salt')), 'avgSalt'],
-        [fn('AVG', col('protein')), 'avgProtein']
+        [fn('AVG', col('salt')), 'avgSalt']
       ]
     });
 

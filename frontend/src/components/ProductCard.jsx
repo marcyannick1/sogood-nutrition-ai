@@ -17,9 +17,9 @@ export function ProductCard({ product }) {
 
   return (
     <Link
-      to={`/product/${product.code}`}
+      to={`/product/${product.id || product.code}`}
       className="product-card block"
-      data-testid={`product-card-${product.code}`}
+      data-testid={`product-card-${product.id || product.code}`}
     >
       {/* Image */}
       <div className="mb-4 flex h-48 items-center justify-center overflow-hidden rounded-xl bg-sogood-bg">
@@ -70,12 +70,13 @@ export function ProductCard({ product }) {
 
 ProductCard.propTypes = {
   product: PropTypes.shape({
-    code: PropTypes.string.isRequired,
+    id: PropTypes.number,
+    code: PropTypes.string,
     product_name: PropTypes.string.isRequired,
     brands: PropTypes.string,
     image_url: PropTypes.string,
     image_front_url: PropTypes.string,
     nutriscore_grade: PropTypes.string,
-    nova_group: PropTypes.number,
+    nova_group: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
   }).isRequired,
 };

@@ -13,16 +13,19 @@ const client = axios.create({
 
 export const apiService = {
   // ==================== BACKEND ENDPOINTS ====================
-  
-  // Rechercher localement (dans MongoDB)
-  searchLocal: async (query) => {
+
+  // Rechercher des produits dans le backend
+  searchProducts: async (query, filters = {}) => {
     try {
-      const response = await client.get(`${BACKEND_URL}/search`, {
-        params: { q: query }
-      });
-      return response.data.data || [];
+      const params = { q: query };
+      if (filters.page) params.page = filters.page;
+      if (filters.nutriScore) params.nutriScore = filters.nutriScore;
+      if (filters.nova) params.nova = filters.nova;
+
+      const response = await client.get(`${BACKEND_URL}/search`, { params });
+      return { products: response.data.data || [], count: response.data.pagination?.total || 0 };
     } catch (error) {
-      console.error('Erreur recherche locale:', error);
+      console.error('Erreur recherche:', error);
       throw error;
     }
   },
@@ -34,95 +37,87 @@ export const apiService = {
       return response.data;
     } catch (error) {
       console.error('Erreur stats:', error);
-      return { totalProducts: 0, byNutriScore: [] };
+      return { totalProducts: 0, byNutriScore: [], byNova: [] };
+    }
+  },
+
+  // Distribution Nutri-Score
+  getNutriscoreDistribution: async () => {
+    try {
+      const response = await client.get(`${BACKEND_URL}/stats/nutriscore-distribution`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur nutriscore distribution:', error);
+      return [];
+    }
+  },
+
+  // Distribution NOVA
+  getNovaDistribution: async () => {
+    try {
+      const response = await client.get(`${BACKEND_URL}/stats/nova-distribution`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur nova distribution:', error);
+      return [];
+    }
+  },
+
+  // Top marques
+  getTopBrands: async () => {
+    try {
+      const response = await client.get(`${BACKEND_URL}/stats/top-brands`);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur top brands:', error);
+      return [];
     }
   },
 
   // Récupérer les produits depuis le backend
-  getProducts: async (page = 1, limit = 20) => {
+  getProducts: async (page = 1, limit = 20, filters = {}) => {
     try {
-      const response = await client.get(`${BACKEND_URL}/products`, {
-        params: { page, limit }
-      });
-      return response.data.data || [];
+      const params = { page, limit };
+      if (filters.categories) params.categories = filters.categories;
+      if (filters.nutriscore_grade) params.nutriscore_grade = filters.nutriscore_grade;
+
+      const response = await client.get(`${BACKEND_URL}/products`, { params });
+      return { products: response.data.data || [], pagination: response.data.pagination || {} };
     } catch (error) {
       console.error('Erreur produits:', error);
       throw error;
     }
   },
 
-  // Syncer produits depuis OpenFoodFacts
-  syncProductsFromAPI: async (query) => {
-    try {
-      const response = await client.post(`${BACKEND_URL}/search/sync`, {
-        q: query,
-        limit: 50
-      });
-      return response.data.data || [];
-    } catch (error) {
-      console.error('Erreur sync API:', error);
-      throw error;
-    }
-  },
-
-  // ==================== OPENFOODFACTS API ====================
-  
-  // Rechercher des produits
-  searchProducts: async (query, filters = {}) => {
-    try {
-      const params = {
-        search_terms: query,
-        action: 'process',
-        json: 1,
-        fields: 'code,product_name,brands,image_url,image_front_url,nutriscore_grade,nova_group,categories_tags,additives_tags,energy_100g,fat_100g,sugars_100g,salt_100g,proteins_100g',
-        page_size: filters.pageSize || 20,
-        page: filters.page || 1,
-      };
-
-      // Filtrer par Nutri-Score
-      if (filters.nutriScore) {
-        params.nutrition_grades = filters.nutriScore;
-      }
-
-      // Filtrer par NOVA
-      if (filters.nova) {
-        params.nova_group = filters.nova;
-      }
-
-      const response = await client.get(API_SEARCH_URL, { params });
-      return response.data;
-    } catch (error) {
-      console.error('Erreur lors de la recherche:', error);
-      throw error;
-    }
-  },
-
   // Récupérer les détails d'un produit
-  getProductDetail: async (barcode) => {
+  getProductDetail: async (id) => {
     try {
-      const url = `${API_BASE_URL}/product/${barcode}.json`;
-      const response = await client.get(url);
-      return response.data.product;
+      const response = await client.get(`${BACKEND_URL}/products/${id}`);
+      return response.data;
     } catch (error) {
       console.error('Erreur lors de la récupération du produit:', error);
       throw error;
     }
   },
 
-  // Récupérer les produits par catégorie
-  getProductsByCategory: async (category) => {
+  // Filtrer les produits
+  filterProducts: async (filters) => {
     try {
-      const params = {
-        categories_tags: category,
-        json: 1,
-        fields: 'code,product_name,brands,image_url,image_front_url,nutriscore_grade,nova_group',
-        page_size: 12,
-      };
-
-      const response = await client.get(API_SEARCH_URL, { params });
+      const response = await client.post(`${BACKEND_URL}/products/filter`, filters);
       return response.data;
     } catch (error) {
-      console.error('Erreur lors de la récupération par catégorie:', error);
+      console.error('Erreur filtrage:', error);
+      throw error;
+    }
+  },
+
+  // Rechercher par catégorie
+  getProductsByCategory: async (category) => {
+    try {
+      const response = await client.get(`${BACKEND_URL}/search/category/${category}`);
+      return response.data.data || [];
+    } catch (error) {
+      console.error('Erreur recherche par catégorie:', error);
       throw error;
     }
   },

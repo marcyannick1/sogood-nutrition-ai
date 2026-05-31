@@ -23,28 +23,40 @@ export function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [nutriscoreData, setNutriscoreData] = useState([]);
   const [novaData, setNovaData] = useState([]);
+  const [topBrands, setTopBrands] = useState([]);
 
   useEffect(() => {
     const loadStats = async () => {
       try {
-        const data = await apiService.getStats();
-        setStats(data);
-
-        // Données factices pour démonstration
-        setNutriscoreData([
-          { grade: 'A', count: 12 },
-          { grade: 'B', count: 28 },
-          { grade: 'C', count: 35 },
-          { grade: 'D', count: 18 },
-          { grade: 'E', count: 7 },
+        const [statsData, nutriscoreData, novaData, brandsData] = await Promise.all([
+          apiService.getStats(),
+          apiService.getNutriscoreDistribution(),
+          apiService.getNovaDistribution(),
+          apiService.getTopBrands()
         ]);
 
-        setNovaData([
-          { name: 'NOVA 1', value: 15 },
-          { name: 'NOVA 2', value: 30 },
-          { name: 'NOVA 3', value: 35 },
-          { name: 'NOVA 4', value: 20 },
-        ]);
+        setStats(statsData);
+
+        // Transformer les données Nutri-Score
+        const nutriscoreFormatted = nutriscoreData.map(item => ({
+          grade: item._id?.toUpperCase() || 'Unknown',
+          count: item.count || 0
+        }));
+        setNutriscoreData(nutriscoreFormatted);
+
+        // Transformer les données NOVA
+        const novaFormatted = novaData.map(item => ({
+          name: `NOVA ${item._id}`,
+          value: item.count || 0
+        }));
+        setNovaData(novaFormatted);
+
+        // Transformer les données des marques
+        const brandsFormatted = brandsData.map(item => ({
+          name: item._id || 'Inconnu',
+          count: item.count || 0
+        })).slice(0, 10);
+        setTopBrands(brandsFormatted);
       } catch (error) {
         console.error('Erreur:', error);
       } finally {
@@ -72,26 +84,26 @@ export function Dashboard() {
         <div className="mb-12 grid gap-6 md:grid-cols-3">
           <div className="product-card">
             <h3 className="mb-2 text-sm text-sogood-text-secondary">
-              Total des analyses
+              Total des produits
             </h3>
             <p className="text-4xl font-bold text-sogood-primary">
-              {stats?.total_scans || 0}
+              {stats?.totalProducts || 0}
             </p>
           </div>
           <div className="product-card">
             <h3 className="mb-2 text-sm text-sogood-text-secondary">
-              Meilleur Nutri-Score
+              Nutri-Scores analysés
             </h3>
             <p className="text-4xl font-bold text-sogood-accent">
-              {stats?.best_nutriscore || 'A'}
+              {stats?.byNutriScore?.length || 0}
             </p>
           </div>
           <div className="product-card">
             <h3 className="mb-2 text-sm text-sogood-text-secondary">
-              Marques analysées
+              Groupes NOVA
             </h3>
             <p className="text-4xl font-bold text-sogood-primary">
-              {stats?.brands_count || 0}
+              {stats?.byNova?.length || 0}
             </p>
           </div>
         </div>
@@ -154,30 +166,25 @@ export function Dashboard() {
             Top 10 Marques analysées
           </h2>
           <div className="space-y-3">
-            {[
-              { name: 'Nestlé', count: 45 },
-              { name: 'Danone', count: 38 },
-              { name: 'PepsiCo', count: 35 },
-              { name: 'Coca-Cola', count: 32 },
-              { name: 'Mondelez', count: 28 },
-              { name: 'Ferrero', count: 25 },
-              { name: 'Unilever', count: 22 },
-              { name: 'Lactalis', count: 20 },
-              { name: 'Fonterra', count: 18 },
-              { name: 'General Mills', count: 15 },
-            ].map((brand) => (
-              <div
-                key={brand.name}
-                className="flex items-center justify-between border-b border-sogood-border pb-3 last:border-b-0"
-              >
-                <span className="font-medium text-sogood-text-primary">
-                  {brand.name}
-                </span>
-                <span className="rounded-full bg-sogood-accent px-3 py-1 text-sm font-semibold text-white">
-                  {brand.count}
-                </span>
-              </div>
-            ))}
+            {topBrands.length > 0 ? (
+              topBrands.map((brand) => (
+                <div
+                  key={brand.name}
+                  className="flex items-center justify-between border-b border-sogood-border pb-3 last:border-b-0"
+                >
+                  <span className="font-medium text-sogood-text-primary">
+                    {brand.name}
+                  </span>
+                  <span className="rounded-full bg-sogood-accent px-3 py-1 text-sm font-semibold text-white">
+                    {brand.count}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-sogood-text-secondary text-center py-4">
+                Aucune donnée disponible
+              </p>
+            )}
           </div>
         </div>
       </div>

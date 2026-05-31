@@ -8,17 +8,28 @@ const router = express.Router();
 // Search in local database
 router.get('/', async (req, res) => {
   try {
-    const { q, page = 1 } = req.query;
+    const { q, page = 1, nutriScore, nova } = req.query;
     if (!q) return res.status(400).json({ error: 'Search query required' });
 
     const offset = (page - 1) * 20;
+    const where = {
+      [Op.or]: [
+        { product_name: { [Op.iLike]: `%${q}%` } },
+        { categories: { [Op.iLike]: `%${q}%` } },
+        { brands: { [Op.iLike]: `%${q}%` } }
+      ]
+    };
+
+    // Ajouter les filtres Nutri-Score et NOVA
+    if (nutriScore) {
+      where.nutriscore_grade = nutriScore.toLowerCase();
+    }
+    if (nova) {
+      where.nova_group = nova.toString();
+    }
+
     const { count, rows } = await Product.findAndCountAll({
-      where: {
-        [Op.or]: [
-          { name: { [Op.iLike]: `%${q}%` } },
-          { category: { [Op.iLike]: `%${q}%` } }
-        ]
-      },
+      where,
       limit: 20,
       offset
     });
@@ -33,7 +44,7 @@ router.get('/', async (req, res) => {
 router.get('/category/:category', async (req, res) => {
   try {
     const products = await Product.findAll({
-      where: { category: { [Op.iLike]: `%${req.params.category}%` } },
+      where: { categories: { [Op.iLike]: `%${req.params.category}%` } },
       limit: 50
     });
 

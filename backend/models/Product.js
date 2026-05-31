@@ -7,87 +7,45 @@ const Product = sequelize.define('Product', {
     primaryKey: true,
     autoIncrement: true
   },
-  code: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    unique: true
-  },
-  name: {
-    type: DataTypes.STRING,
+  product_name: {
+    type: DataTypes.TEXT,
     allowNull: false
   },
   brands: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
-    defaultValue: []
+    type: DataTypes.TEXT
   },
-  category: {
+  categories: {
+    type: DataTypes.TEXT
+  },
+  ingredients_text: {
+    type: DataTypes.TEXT
+  },
+  nutriscore_grade: {
     type: DataTypes.STRING
   },
-  imageUrl: {
+  nova_group: {
     type: DataTypes.STRING
   },
-  nutriScore: {
-    type: DataTypes.ENUM('A', 'B', 'C', 'D', 'E', 'UNKNOWN'),
-    defaultValue: 'UNKNOWN'
-  },
-  nova: {
-    type: DataTypes.INTEGER,
-    defaultValue: 0,
-    validate: {
-      isIn: [[0, 1, 2, 3, 4]]
-    }
-  },
-  energyKcal: {
-    type: DataTypes.FLOAT
-  },
-  fat: {
-    type: DataTypes.FLOAT
-  },
-  saturatedFat: {
-    type: DataTypes.FLOAT
-  },
-  carbohydrates: {
-    type: DataTypes.FLOAT
+  image_url: {
+    type: DataTypes.TEXT
   },
   sugars: {
-    type: DataTypes.FLOAT
-  },
-  protein: {
     type: DataTypes.FLOAT
   },
   salt: {
     type: DataTypes.FLOAT
   },
-  fiber: {
+  fat: {
     type: DataTypes.FLOAT
   },
-  additives: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
-    defaultValue: []
-  },
-  allergens: {
-    type: DataTypes.ARRAY(DataTypes.STRING),
-    defaultValue: []
-  },
-  ingredients: {
-    type: DataTypes.TEXT
-  },
-  ecoscoreGrade: {
-    type: DataTypes.STRING
-  },
-  origin: {
-    type: DataTypes.STRING
-  },
-  lastUpdated: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW
+  additives_count: {
+    type: DataTypes.INTEGER
   }
 }, {
   tableName: 'products',
-  timestamps: true,
+  timestamps: false,
   indexes: [
-    { fields: ['code'] },
-    { fields: ['name'] }
+    { fields: ['product_name'] }
   ]
 });
 

@@ -20,6 +20,8 @@ def transform_products():
         StructField("ingredients_text_fr", StringType(), True),
         StructField("nutriscore_grade", StringType(), True),
         StructField("nova_group", StringType(), True),
+        StructField("image_url", StringType(), True),
+
         StructField("nutriments", StructType([
             StructField("sugars_100g", DoubleType(), True),
             StructField("salt_100g", DoubleType(), True),
@@ -48,6 +50,8 @@ def transform_products():
         col("ingredients_text_fr").alias("ingredients_text"),
         col("nutriscore_grade"),
         col("nova_group"),
+        col("image_url"),
+
         col("nutriments.sugars_100g").alias("sugars"),
         col("nutriments.salt_100g").alias("salt"),
         col("nutriments.fat_100g").alias("fat"),
@@ -59,10 +63,22 @@ def transform_products():
         col("product_name").isNotNull()
     )
 
-    # Suppression des null bytes (\0) dans les colonnes textuelles
-    string_cols = ["product_name", "brands", "categories", "ingredients_text", "nutriscore_grade", "nova_group"]
+    # Suppression des null bytes (\0)
+    string_cols = [
+        "product_name",
+        "brands",
+        "categories",
+        "ingredients_text",
+        "nutriscore_grade",
+        "nova_group",
+        "image_url",
+    ]
+
     for col_name in string_cols:
-        clean_df = clean_df.withColumn(col_name, regexp_replace(col(col_name), "\x00", ""))
+        clean_df = clean_df.withColumn(
+            col_name,
+            regexp_replace(col(col_name), "\x00", "")
+        )
 
     print("Sauvegarde parquet...")
 

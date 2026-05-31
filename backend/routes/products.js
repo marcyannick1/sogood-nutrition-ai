@@ -7,12 +7,12 @@ const router = express.Router();
 // Get all products with filtering
 router.get('/', async (req, res) => {
   try {
-    const { page = 1, limit = 20, category, nutriScore } = req.query;
+    const { page = 1, limit = 20, categories, nutriscore_grade } = req.query;
     const offset = (page - 1) * limit;
 
     let where = {};
-    if (category) where.category = { [Op.iLike]: `%${category}%` };
-    if (nutriScore) where.nutriScore = nutriScore.toUpperCase();
+    if (categories) where.categories = { [Op.iLike]: `%${categories}%` };
+    if (nutriscore_grade) where.nutriscore_grade = nutriscore_grade.toLowerCase();
 
     const { count, rows } = await Product.findAndCountAll({
       where,
@@ -41,28 +41,18 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// Get product by code
-router.get('/code/:code', async (req, res) => {
-  try {
-    const product = await Product.findOne({ where: { code: req.params.code } });
-    if (!product) return res.status(404).json({ error: 'Product not found' });
-    res.json(product);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
 
 // Filter by criteria
 router.post('/filter', async (req, res) => {
   try {
-    const { nutriScore, nova, maxSugars, maxSalt, brands } = req.body;
+    const { nutriscore_grade, nova_group, maxSugars, maxSalt, brands } = req.body;
     let where = {};
 
-    if (nutriScore) where.nutriScore = { [Op.in]: nutriScore };
-    if (nova) where.nova = { [Op.in]: nova };
+    if (nutriscore_grade) where.nutriscore_grade = { [Op.in]: nutriscore_grade };
+    if (nova_group) where.nova_group = { [Op.in]: nova_group };
     if (maxSugars) where.sugars = { [Op.lte]: maxSugars };
     if (maxSalt) where.salt = { [Op.lte]: maxSalt };
-    if (brands) where.brands = { [Op.overlap]: brands };
+    if (brands) where.brands = { [Op.iLike]: `%${brands}%` };
 
     const products = await Product.findAll({ where, limit: 100 });
     res.json(products);
