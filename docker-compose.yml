@@ -119,22 +119,50 @@ services:
     volumes:
       - ./:/opt/project
 
-#  airflow:
-#    image: apache/airflow:2.9.1
-#    container_name: sogood_airflow
-#    restart: always
-#    depends_on:
-#      - postgres
-#    environment:
-#      AIRFLOW__CORE__EXECUTOR: SequentialExecutor
-#      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://sogood:sogood@postgres:5432/sogood
-#      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
-#    ports:
-#      - "8081:8080"
-#    volumes:
-#      - ./airflow/dags:/opt/airflow/dags
-#      - airflow_data:/opt/airflow
+  airflow-postgres:
+    image: postgres:16
+    container_name: airflow_postgres
+    restart: always
+    environment:
+      POSTGRES_USER: airflow
+      POSTGRES_PASSWORD: airflow
+      POSTGRES_DB: airflow
+    ports:
+      - "5433:5432"
+    volumes:
+      - airflow_db:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD", "pg_isready", "-U", "airflow" ]
+      interval: 5s
+      retries: 5
+
+  # -------------------------
+  # AIRFLOW
+  # -------------------------
+  airflow:
+    build: ./airflow/
+    container_name: sogood_airflow
+    depends_on:
+      airflow-postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-postgres/airflow
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__API__AUTH_BACKENDS: airflow.api.auth.backend.basic_auth,airflow.api.auth.backend.session
+      AIRFLOW__CORE__FERNET_KEY: "Msa3d0Z-F2yLbSgm3fNPTUJQVLxrJ7EZ5jZsP-K3Vqw="
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+    ports:
+      - "8081:8080"
+    command: >
+      bash -c "
+      airflow db migrate &&
+      airflow users create --username admin --password admin --firstname admin --lastname admin --role Admin --email admin@example.com 2>/dev/null || true &&
+      airflow scheduler &
+      exec airflow webserver
+      "
 
 volumes:
   postgres_data:
-  airflow_data:
+  airflow_db:
