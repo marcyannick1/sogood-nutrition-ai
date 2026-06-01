@@ -121,4 +121,15 @@ export const apiService = {
       throw error;
     }
   },
+
+  // Prédiction Nutri-Score
+  predictNutriScore: async (features) => {
+    try {
+      const response = await client.post(`${BACKEND_URL}/prediction`, features);
+      return response.data;
+    } catch (error) {
+      console.error('Erreur prédiction Nutri-Score:', error);
+      throw error;
+    }
+  },
 };

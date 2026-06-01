@@ -5,6 +5,7 @@ import { SearchResults } from './pages/SearchResults';
 import { ProductDetail } from './pages/ProductDetail';
 import { Dashboard } from './pages/Dashboard';
 import { Compare } from './pages/Compare';
+import { Prediction } from './pages/Prediction';
 import './App.css';
 
 function App() {
@@ -18,6 +19,7 @@ function App() {
           <Route path="/product/:id" element={<ProductDetail />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/compare" element={<Compare />} />
+          <Route path="/prediction" element={<Prediction />} />
         </Routes>
       </main>
     </Router>

@@ -1,4 +1,4 @@
-import { BarChart3, GitCompare, Leaf, Search } from 'lucide-react';
+import { BarChart3, GitCompare, Leaf, Search, Sparkles } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 export function Header() {
@@ -8,6 +8,7 @@ export function Header() {
     { icon: Search, label: 'Rechercher', to: '/' },
     { icon: BarChart3, label: 'Dashboard', to: '/dashboard' },
     { icon: GitCompare, label: 'Comparer', to: '/compare' },
+    { icon: Sparkles, label: 'Prédiction', to: '/prediction' },
   ];
 
   const isActive = (path) => location.pathname === path;

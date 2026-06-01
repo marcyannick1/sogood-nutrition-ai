@@ -24,6 +24,18 @@ services:
     depends_on:
       - postgres
 
+  ml:
+    build: ./ml
+    container_name: sogood_ml
+    restart: always
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./ml:/app
+      - ./model:/app/../model
+    environment:
+      PYTHONUNBUFFERED: 1
+
   backend:
     build: ./backend
     container_name: sogood_backend
@@ -32,6 +44,7 @@ services:
       - "8000:8000"
     depends_on:
       - postgres
+      - ml
     environment:
       DB_HOST: postgres
       DB_PORT: 5432
@@ -39,6 +52,7 @@ services:
       DB_USER: sogood
       DB_PASSWORD: sogood
       PORT: 8000
+      ML_API_URL: http://ml:8001
     volumes:
       - ./backend:/app
       - /app/node_modules

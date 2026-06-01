@@ -5,6 +5,7 @@ import sequelize from './config/database.js';
 import productsRouter from './routes/products.js';
 import searchRouter from './routes/search.js';
 import statsRouter from './routes/stats.js';
+import predictionRouter from './routes/prediction.js';
 
 dotenv.config();
 
@@ -37,6 +38,7 @@ app.get('/api/health', (req, res) => {
 app.use('/api/products', productsRouter);
 app.use('/api/search', searchRouter);
 app.use('/api/stats', statsRouter);
+app.use('/api/prediction', predictionRouter);
 
 // 404 handler
 app.use((req, res) => {
